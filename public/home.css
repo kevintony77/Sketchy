@@ -1,0 +1,128 @@
+
+
+@font-face {
+    font-family: "SketchyFont";
+    src: url("comma.ttf");
+}
+*{
+    font-family: "Fredoka", sans-serif;
+    user-select: none;
+}
+body {
+    background-image: url(Wallpaper\ v3.png);
+    background-size: 1000px;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    font-family: "Fredoka", sans-serif;
+}
+.subtitle{
+    font-family: "SketchyFont";
+    font-size: 25px;
+    font-weight: bolder;
+    margin-top: 10px;
+    margin-bottom: 15px;
+}
+.container {
+    width: 400px;
+    height: 230px;
+    background-color: rgba(213, 58, 55, 0.697);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+    border-radius: 35px;
+    font-family: "Fredoka", sans-serif;
+    justify-content: center;
+    border:solid black 4px;
+    box-shadow: 15px 15px;
+    box-shadow:
+        inset 0 0 0 5px rgb(151, 38, 38);
+}
+
+#name-input {
+    width: 300px;
+    height: 35px;
+    border-radius: 10px;
+    border: black solid 1px;
+    padding-left: 10px;
+    font-family: "Fredoka", sans-serif;
+}
+
+#create-room {
+    width: 300px;
+    height: 35px;
+    border-radius: 15px;
+    border: none;
+    background-color: rgb(235, 219, 113);
+    font-size: 20px;
+    font-weight:500;
+    box-shadow:0px 4px black;
+    border: black solid 1px;
+    cursor: pointer;
+    transition: transform 0.2s ease,box-shadow 0.2s ease-out;
+}
+#create-room:active{
+    box-shadow: 0px 0px black;
+    transform: translate(0px, 4px);
+}
+
+.join-container {
+    width: 300px;
+    display: flex;
+    gap: 5px;
+}
+
+#join-room {
+    flex: 1;
+    height: 35px;
+    background-color: rgb(83, 220, 186);
+    border-radius: 10px;
+    border: none;
+    font-size: 16px;
+    font-weight:500;
+    box-shadow:0px 4px black;
+    border: black solid 1px;
+    box-sizing: border-box;
+    cursor: pointer;
+    transition: transform 0.2s ease,box-shadow 0.2s ease-out;
+}
+#join-room:active{
+    box-shadow: 0px 0px black;
+    transform: translate(0px, 4px);
+    
+}
+
+#room-input {
+    flex: 1.5;
+    border-radius: 10px;
+    border: solid black 1px;
+    padding-left: 15px;
+}
+
+.divider {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width:300px;
+}
+
+.divider::before {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 2px;
+    background-color: rgba(154, 41, 39, 0.839);
+    z-index: 1;
+}
+
+.divider span {
+    background-color: rgb(227, 180, 104);
+    padding: 0 15px;
+    font-weight: 500;
+    font-size: 12px;
+    z-index: 2;
+    border: 2px solid rgba(154, 41, 39, 0.839);
+    border-radius: 8px;
+}

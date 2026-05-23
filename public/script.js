@@ -1,25 +1,82 @@
 const socket = io('http://localhost:3000')
 const canvas = document.getElementById("board");
+canvas.width = 700;
+canvas.height = 560;
 const colorPicker = document.querySelector('.colorSelector');
 const clearBtn = document.querySelector('.clearCanvas');
 let myTurn = false;
 let gameState = 'drawing';
 const playerTab = document.querySelector('.player-tab')
+const overlay =
+    document.getElementById('turn-overlay');
+
+const overlayText =
+    document.getElementById('turn-text');
 
 const messageForm = document.getElementById('send-container')
 const messageInput = document.getElementById('message-input')
-const messageContainer = document.getElementById('message-container')
-const name = prompt('What is your name?')
+const messageContainer = document.getElementById('message-container');
+const wordDisplay = document.querySelector('.word-display')
+
+const togglePlayersBtn =
+    document.getElementById('toggle-players');
+
+togglePlayersBtn.addEventListener('click', () => {
+
+    playerTab.classList.toggle('open');
+
+});
+const params = new URLSearchParams(window.location.search)
+const roomCode = params.get("code")
+const name = localStorage.getItem('name') || 'SketchyFan'
+const voteModal =
+    document.getElementById('vote-modal');
+
+const voteOptions =
+    document.getElementById('vote-options');
+
+function openVoteModal(turnOrder, users) {
+
+    voteOptions.innerHTML = '';
+
+    turnOrder.forEach(id => {
+
+        const btn =
+            document.createElement('button');
+
+        btn.innerText =
+            users[id].name;
+
+        btn.onclick = () => {
+
+            socket.emit('cast-vote', id);
+
+            closeVoteModal();
+        };
+
+        voteOptions.append(btn);
+    });
+
+    voteModal.style.display = 'flex';
+}
+
+function closeVoteModal() {
+    voteModal.style.display = 'none';
+}
 appendMessage(`You joined`)
-socket.emit('new-user', name)
+
+
+
+socket.emit('join-room', { roomCode, name })
 socket.on('chat-message', (data) => {
     appendMessage(`${data.name}:${data.message}`)
+    messageContainer.scrollTop = messageContainer.scrollHeight;
 })
 socket.on('user-connected', name => {
     appendMessage(`${name} joined.`)
 })
 messageForm.addEventListener('submit', e => {
-    e.preventDefault()
+    e.preventDefault();
     const message = messageInput.value;
     appendMessage(`You: ${message}`)
     socket.emit('send-chat-message', message)
@@ -32,17 +89,35 @@ socket.on('user-disconnected', (name) => {
 socket.on('role', role => {
     console.log(role)
 })
-
-socket.on('turn', (turnId) => {
-    console.log(myTurn)
-    myTurn = (turnId === socket.id);
+socket.on('word', word =>{
+    wordDisplay.innerText = word;
 })
+socket.on('turn-transition', (name) => {
+
+    overlay.style.display = 'flex';
+
+    overlayText.innerText =
+        `Next Turn: ${name}`;
+
+});
+
+socket.on('turn-start', (turnId) => {
+
+    overlay.style.display = 'none';
+
+    myTurn = (turnId === socket.id);
+
+});
 function appendMessage(message) {
     const messageElement = document.createElement('div')
     messageElement.innerText = message;
     messageContainer.append(messageElement);
+    messageContainer.scrollTop = messageContainer.scrollHeight;
 
 }
+socket.on("timer", (time) => {
+    document.querySelector(".timer").innerText = time;
+});
 clearBtn.addEventListener('click', (e) => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     socket.emit('clear')
@@ -80,23 +155,14 @@ socket.on('drawing-user', (user) => {
     console.log('Current user is:', user)
 })
 
-socket.on('start-vote', (users) => {
+socket.on('start-vote', (turnOrder, users) => {
+
     gameState = 'voting';
-    const voteContainer = document.createElement('div');
-    voteContainer.id = 'vote-container';
-    Object.keys(users).forEach(id => {
-        const btn = document.createElement('button');
-        btn.innerText = `Vote for ${users[id].name}`;
-        btn.onclick = () => socket.emit('cast-vote', id);
-        voteContainer.append(btn);
-    });
-    document.body.append(voteContainer);
+    openVoteModal(turnOrder, users);
 })
 socket.on('vote-over', () => {
-    const oldContainer = document.getElementById('vote-container');
-    if (oldContainer) oldContainer.remove();
+    closeVoteModal();
     gameState = 'drawing';
-
 })
 
 socket.on('playerList', players => {
@@ -111,33 +177,44 @@ socket.on('user-removed', players => {
     playerTab.innerHTML = '';
     Object.keys(players).forEach(id => {
         const player = document.createElement('div')
-        player.innerText = players[id].name || 'random'
+        player.innerText = players[id].name || 'SketchyFan'
         playerTab.append(player)
     })
 })
+function getScaledPos(e) {
 
+    const scaleX =
+        canvas.width / canvas.offsetWidth;
+
+    const scaleY =
+        canvas.height / canvas.offsetHeight;
+
+    return {
+        x: e.offsetX * scaleX,
+        y: e.offsetY * scaleY
+    };
+}
 canvas.addEventListener("mousedown", (e) => {
     if (gameState == 'drawing') {
         drawing = true;
-        lastX = e.offsetX;
-        lastY = e.offsetY;
+        const pos = getScaledPos(e);
+
+        lastX = pos.x;
+        lastY = pos.y;
     }
 });
 
 canvas.addEventListener("mouseup", () => {
-    if (myTurn && drawing) {
-        console.log('som', drawing)
-        socket.emit('turnover')
-    }
     drawing = false;
-
-});
+});     
 
 canvas.addEventListener("mousemove", (e) => {
     if (!drawing || !myTurn || gameState != 'drawing') return;
 
-    const x = e.offsetX;
-    const y = e.offsetY;
+    const pos = getScaledPos(e);
+
+    const x = pos.x;
+    const y = pos.y;
 
     ctx.beginPath();
     ctx.strokeStyle = color;
