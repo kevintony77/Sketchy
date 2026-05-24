@@ -87,12 +87,23 @@ const words = [
     "Mountain Cabin",
     "Theme Park"
 ];
-const PORT = process.env.PORT || 3000;
-const io = require('socket.io')(PORT, {
+
+const express = require('express');
+const http = require('http');
+
+const app = express();
+const server = http.createServer(app);
+
+const io = require('socket.io')(server, {
     cors: {
-        origin: "http://127.0.0.1:5500"
+        origin: "*"
     }
-})
+});
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+    console.log('Server running');
+});
+app.use(express.static('public'));
 const rooms = {}
 // let currentTurnId = 0;
 // let turnOrder = [];
@@ -103,14 +114,39 @@ const rooms = {}
 // let gameStarted = false;
 // let numbOfSpec = 0;
 // let allowedNumbOfSpec = 1;
+function resetRoom(room) {
+    room.currentTurnId = 0;
+    room.turnOrder = Object.keys(room.users);
 
+    room.votes = {};
+    room.startVoteRequests.clear();
+
+    room.numbOfSpec = 0;
+
+    for (const id in room.users) {
+        room.users[id].status = 'normal';
+    }
+
+    room.gameState = 'lobby';
+    room.gameStarted = false;
+
+    if (room.timer) {
+        clearInterval(room.timer);
+        room.timer = null;
+    }
+
+    io.to(room.code).emit('clear');
+}
 io.on("connection", socket => {
     socket.on('start-game', () => {
-        const room = rooms[socket.roomCode];
 
+        const room = rooms[socket.roomCode];
         if (!room) return;
+        if (room.gameStarted) return;
+        if (!room.users[room.hostId]) return;
         if (!room.users[socket.id]) return;
-        if (room.users[socket.id]['name'] == "host") {
+        if (Object.keys(room.users).length < 3) return;
+        if (socket.id === room.hostId) {
             room.code = socket.roomCode;
             room.word = words[Math.floor(Math.random() * words.length)]
             room.gameStarted = true;
@@ -181,14 +217,15 @@ io.on("connection", socket => {
 
     }
     function nextTurn(room) {
+        if (!room.gameStarted) return;
+        if (room.timer) {
+            clearInterval(room.timer)
+        }
+        if (room.turnOrder.length === 0) return;
         room.currentTurnId++;
         if (room.currentTurnId >= room.turnOrder.length) {
             room.currentTurnId = 0;
         }
-        io.to(room.code).emit(
-            "turn",
-            room.turnOrder[room.currentTurnId]
-        );
 
         const currentId =
             room.turnOrder[room.currentTurnId];
@@ -271,6 +308,7 @@ io.on("connection", socket => {
                 console.log('Vote has ended in a draw')
                 io.to(socket.roomCode).emit('vote-draw')
                 room.gameState = "drawing";
+                nextTurn(room);
                 return;
             }
             if (finalUserId && room.users[finalUserId]) {
@@ -282,7 +320,7 @@ io.on("connection", socket => {
                     if (room.numbOfSpec > room.allowedNumbOfSpec) {
                         console.log(votedUser.name, 'was the Imposter! Imposter wins!');
                         io.to(socket.roomCode).emit('game-over', { winner: 'Imposter' });
-                        room.gameStarted = false;
+                        resetRoom(room)
                         return;
                     }
 
@@ -297,11 +335,13 @@ io.on("connection", socket => {
                 } else {
                     console.log(votedUser.name, 'was the Imposter! artists win!');
                     io.to(socket.roomCode).emit('game-over', { winner: 'artists' });
-                    room.gameStarted = false;
+                    resetRoom(room)
+                    return;
                 }
             }
             room.votes = {};
             room.gameState = 'drawing';
+            nextTurn(room);
         }
 
     })
@@ -338,10 +378,6 @@ io.on("connection", socket => {
         socket.broadcast.to(socket.roomCode).emit('draw-data', data)
         socket.broadcast.to(socket.roomCode).emit('drawing-user', room.users[room.turnOrder[room.currentTurnId]]['name'])
     })
-    socket.on('clear', () => {
-        socket.broadcast.to(socket.roomCode).emit('clear')
-    })
-
     socket.on('join-room', ({ roomCode, name }) => {
         if (!rooms[roomCode]) {
             rooms[roomCode] = {
@@ -354,7 +390,7 @@ io.on("connection", socket => {
                 gameStarted: false,
                 numbOfSpec: 0,
                 allowedNumbOfSpec: 1,
-
+                hostId: socket.id
             }
         }
         socket.join(roomCode)
@@ -382,16 +418,17 @@ io.on("connection", socket => {
         socket.broadcast.to(socket.roomCode).emit('chat-message', { message: message, name: room.users[socket.id]['name'] })
     })
     socket.on("disconnect", () => {
+
         const room = rooms[socket.roomCode];
 
         if (!room) return;
 
         const user = room.users[socket.id];
 
-        if (!user) return; // important safety check
-        // notify others
-        socket.broadcast.to(socket.roomCode).emit("user-disconnected", user.name);
+        if (!user) return;
 
+        socket.broadcast.to(socket.roomCode).emit("user-disconnected", user.name);
+        const wasCurrentTurn = socket.id === room.turnOrder[room.currentTurnId]
         // remove from users
         delete room.users[socket.id];
         if (Object.keys(room.users).length === 0) {
@@ -404,8 +441,14 @@ io.on("connection", socket => {
             if (index < room.currentTurnId) room.currentTurnId--;
             if (room.currentTurnId >= room.turnOrder.length) room.currentTurnId = 0;
         }
-
+        if (wasCurrentTurn && room.turnOrder.length > 0) {
+            nextTurn(room);
+        }
         delete room.votes[socket.id];
+        if (socket.id === room.hostId) {
+            const remainingUsers = Object.keys(room.users);
+            room.hostId = remainingUsers[0] || null;
+        }
         io.to(socket.roomCode).emit('user-removed', room.users)
 
     })

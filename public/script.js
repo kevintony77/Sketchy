@@ -1,4 +1,4 @@
-const socket = io('http://localhost:3000')
+const socket = io()
 const canvas = document.getElementById("board");
 canvas.width = 700;
 canvas.height = 560;
@@ -50,8 +50,9 @@ function openVoteModal(turnOrder, users) {
         btn.onclick = () => {
 
             socket.emit('cast-vote', id);
-
-            closeVoteModal();
+            if (id != socket.id) {
+                closeVoteModal();
+            }
         };
 
         voteOptions.append(btn);
@@ -89,7 +90,7 @@ socket.on('user-disconnected', (name) => {
 socket.on('role', role => {
     console.log(role)
 })
-socket.on('word', word =>{
+socket.on('word', word => {
     wordDisplay.innerText = word;
 })
 socket.on('turn-transition', (name) => {
@@ -118,9 +119,8 @@ function appendMessage(message) {
 socket.on("timer", (time) => {
     document.querySelector(".timer").innerText = time;
 });
-clearBtn.addEventListener('click', (e) => {
+socket.on('clear', () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    socket.emit('clear')
 })
 socket.on('clear', () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -206,7 +206,7 @@ canvas.addEventListener("mousedown", (e) => {
 
 canvas.addEventListener("mouseup", () => {
     drawing = false;
-});     
+});
 
 canvas.addEventListener("mousemove", (e) => {
     if (!drawing || !myTurn || gameState != 'drawing') return;

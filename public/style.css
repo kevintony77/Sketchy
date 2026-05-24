@@ -188,7 +188,7 @@ body {
 
 .vote-box{
     width:400px;
-    height:250px;
+    height:fit-content;
     background-color: white;
     display:flex;
     flex-direction: column;
@@ -207,6 +207,7 @@ body {
     gap:10px;
     padding:10px;
     flex:1;
+    height:70px;
 }
 #vote-options button{
     padding:6px;
