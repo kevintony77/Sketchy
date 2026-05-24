@@ -1,75 +1,34 @@
-<!DOCTYPE html>
-<html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="home.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&display=swap" rel="stylesheet">
-
-    <script defer src="/socket.io/socket.io.js"></script>
-    <script defer src="script.js"></script>
 </head>
 
 <body>
-    <div id="turn-overlay">
-        <h1 id="turn-text"></h1>
+    <img src="logo v2.gif" width="350px" class="title">
+    <div class="subtitle">
+        Draw Together & Spot the Imposter.
     </div>
-    <div class="content-wrapper">
+    <div class="container">
+        <input id="name-input" placeholder="Your name">
 
-        <div class="top-bar">
-
-            <button id="toggle-players">
-                ☰ Players
+        <button id="create-room">
+            Create Room
+        </button>
+        <div class="divider">
+            <span>OR</span>
+        </div>
+        <div class="join-container">
+            <input id="room-input" placeholder="Room code">
+            <button id="join-room">
+                Join Room
             </button>
-
-            <div class="word-display">
-                APPLE
-            </div>
-
-            <div class="timer">
-                23s
-            </div>
         </div>
-        <div id="vote-modal">
 
-            <div class="vote-box">
 
-                <div class="description">Vote a Player</div>
-
-                <div id="vote-options">
-                </div>
-
-            </div>
-
-        </div>
-        <div class="game-container">
-            <div class="player-wrapper">
-                <div class="player-tab">
-                </div>
-            </div>
-
-            <div class="draw-container">
-                <canvas id="board"></canvas>
-                <div class="draw-tools">
-                    <input type="color" class="colorSelector">
-                    <button class="clearCanvas">clear</button>
-                </div>
-            </div>
-            <div class="message-tab">
-                <div id="message-container">
-                </div>
-                <form action="" id="send-container">
-                    <input type="text" id="message-input">
-                </form>
-            </div>
-        </div>
     </div>
-
-
 </body>
 
-</html>
+
+<script src="home.js"></script>

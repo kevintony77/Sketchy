@@ -13,7 +13,7 @@ document.getElementById('create-room').addEventListener('click', ()=>{
 
     localStorage.setItem("name", name);
     const roomCode = generateRoomCode();
-    window.location.href = `index.html?code=${roomCode}`;
+    window.location.href = `game.html?code=${roomCode}`;
 })
 
 document.getElementById('join-room').addEventListener('click', ()=>{
@@ -21,5 +21,5 @@ document.getElementById('join-room').addEventListener('click', ()=>{
     const roomCode = document.getElementById('room-input').value.toUpperCase();
     if(!name || !roomCode) return;
     localStorage.setItem("name",name)
-    window.location.href = `index.html?code=${roomCode}`;
+    window.location.href = `game.html?code=${roomCode}`;
 })
