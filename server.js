@@ -262,7 +262,9 @@ io.on("connection", socket => {
         if (!room) return;
         const user = room.users[socket.id];
         if (!user) return;
+        
         if (room.users[socket.id].status === 'spectator') return;
+        io.to(socket.roomCode).emit('chat-message', { message: `${user.name} has requested to start voting.`, name: 'Server'})
         room.startVoteRequests.add(socket.id)
         const totalPlayers = room.turnOrder.length;
         if (!room.users[socket.id]) return
