@@ -72,7 +72,9 @@ body {
     display: flex;
     gap: 5px;
 }
-
+canvas{
+    touch-action: none;
+}
 #join-room {
     flex: 1;
     height: 35px;

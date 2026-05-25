@@ -236,3 +236,51 @@ canvas.addEventListener("mousemove", (e) => {
     lastX = x;
     lastY = y;
 });
+
+// for mobile touch
+function getTouchPos(e) {
+    const rect = canvas.getBoundingClientRect();
+
+    const scaleX = canvas.width / canvas.offsetWidth;
+    const scaleY = canvas.height / canvas.offsetHeight;
+
+    return {
+        x: (e.touches[0].clientX - rect.left) * scaleX,
+        y: (e.touches[0].clientY - rect.top) * scaleY
+    };
+}
+canvas.addEventListener("touchstart", (e) => {
+    e.preventDefault()
+    if (gameState == 'drawing') {
+        drawing = true;
+        const pos = getTouchPos(e);
+
+        lastX = pos.x;
+        lastY = pos.y;
+    }
+});
+
+canvas.addEventListener("touchend", () => {
+    drawing = false;
+});
+
+canvas.addEventListener("touchmove", (e) => {
+    e.preventDefault()
+    if (!drawing || !myTurn || gameState != 'drawing') return;
+
+    const pos = getTouchPos(e);
+
+    const x = pos.x;
+    const y = pos.y;
+
+    ctx.beginPath();
+    ctx.strokeStyle = color;
+    ctx.moveTo(lastX, lastY);
+    ctx.lineTo(x, y);
+    ctx.stroke();
+    socket.emit('draw', { x, y, lastX, lastY, color })
+    lastX = x;
+    lastY = y;
+});
+
+
