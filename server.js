@@ -145,6 +145,7 @@ io.on("connection", socket => {
         if (room.gameStarted) return;
         if (!room.users[room.hostId]) return;
         if (!room.users[socket.id]) return;
+        if(socket.id !== room.hostId)return;
         if (Object.keys(room.users).length < 3){
             io.to(socket.roomCode).emit('start-fail')
             console.log('start failed')
