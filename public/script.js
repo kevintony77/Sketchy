@@ -35,6 +35,16 @@ const voteModal =
 const voteOptions =
     document.getElementById('vote-options');
 
+document.querySelector('.start-button').addEventListener('click', e=>{
+    socket.emit('start-game')
+})
+socket.on('start-fail', ()=>{
+    console.log('failed')
+    document.querySelector('.start-fail').style.visibility = 'visible';
+})
+socket.on('game-started',()=>{
+    document.querySelector('.start-overlay').style.display = 'none';
+})
 function openVoteModal(turnOrder, users) {
 
     voteOptions.innerHTML = '';
@@ -150,6 +160,7 @@ socket.on('draw-data', data => {
     ctx.lineTo(data.x, data.y);
     ctx.stroke();
     colorPicker.value = data.color;
+    color = colorPicker.value;
 })
 socket.on('drawing-user', (user) => {
     console.log('Current user is:', user)

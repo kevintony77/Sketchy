@@ -15,6 +15,13 @@
 </head>
 
 <body>
+    <div class="start-overlay">
+        <div class="start-box">
+            <img src="logo v2.gif">
+            <button class="start-button">START</button>
+            <div class="start-fail">Not enough players (Min: 4)</div>
+        </div>
+    </div>
     <div id="turn-overlay">
         <h1 id="turn-text"></h1>
     </div>
@@ -56,7 +63,7 @@
                 <canvas id="board"></canvas>
                 <div class="draw-tools">
                     <input type="color" class="colorSelector">
-                    <button class="clearCanvas">clear</button>
+                    <button class="request-vote" onclick="socket.emit('request-start-vote')">Request Vote</button>
                 </div>
             </div>
             <div class="message-tab">

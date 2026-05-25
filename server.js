@@ -145,15 +145,21 @@ io.on("connection", socket => {
         if (room.gameStarted) return;
         if (!room.users[room.hostId]) return;
         if (!room.users[socket.id]) return;
-        if (Object.keys(room.users).length < 3) return;
+        if (Object.keys(room.users).length < 3){
+            io.to(socket.roomCode).emit('start-fail')
+            console.log('start failed')
+            return;
+        } else{
+            io.to(socket.roomCode).emit('game-started')
+        }
         if (socket.id === room.hostId) {
             room.code = socket.roomCode;
             room.word = words[Math.floor(Math.random() * words.length)]
             room.gameStarted = true;
             room.turnOrder = Object.keys(room.users);
             room.currentTurnId = 0;
-            room.turnTime = 20;
-            room.timeLeft = 20;
+            room.turnTime = 15;
+            room.timeLeft = 15;
             room.timer = null;
 
             const currentId =
