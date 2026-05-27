@@ -11,9 +11,9 @@ Else he continues to play amidst the artists.
 If 2 or more people are voted out falsely, imposter wins.
 
 # Future updates
-Add a real start UI: Player screen, game options, URL copy button etc.
-Add a real vote UI.
-Display current turn constantly.
-Display win screen.
-Possibly add imposter sabotage opportunities.
-Add proper drawing tools.
+* Add a real start UI: Player screen, game options, URL copy button etc.
+* Add a real vote UI.
+* Display current turn constantly.
+* Display win screen.
+* Possibly add imposter sabotage opportunities.
+* Add proper drawing tools.
